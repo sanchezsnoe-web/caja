@@ -79,6 +79,36 @@ onSnapshot(doc(db,'caja','movimientos_bulk'),snap=>{
   }
 });
 
+onSnapshot(doc(db,'caja','config'),snap=>{
+  if(!snap.exists())return;
+  const remote=snap.data();
+  let cambio=false;
+  if(remote.arqueo){
+    const localStr=JSON.stringify(state.arqueo);
+    const remoteStr=JSON.stringify(remote.arqueo);
+    if(localStr!==remoteStr){state.arqueo=remote.arqueo;cambio=true;}
+  }
+  if(remote.saldosIniciales){
+    const localStr=JSON.stringify(state.saldosIniciales);
+    const remoteStr=JSON.stringify(remote.saldosIniciales);
+    if(localStr!==remoteStr){state.saldosIniciales=remote.saldosIniciales;cambio=true;}
+  }
+  if(remote.mpProximos){
+    const localStr=JSON.stringify(state.mpProximos);
+    const remoteStr=JSON.stringify(remote.mpProximos);
+    if(localStr!==remoteStr){state.mpProximos=remote.mpProximos;cambio=true;}
+  }
+  if(cambio){
+    guardarStorageLocal();
+    const tabActiva=document.querySelector('.tab.active')?.textContent?.trim();
+    if(tabActiva==='Arqueo'){
+      buildArqueoTable();recalcArqueo();cargarSaldosIniciales();recalcDigital();
+    }
+    if(tabActiva==='Proyección'||tabActiva==='Proyeccion')renderMpProximos();
+    setEstado('online','Sincronizado');
+  }
+});
+
 window._guardarFB=guardarMovimientosFB;
 window._cargarFB=cargarFirebase;
 
